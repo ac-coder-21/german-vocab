@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import { InlineScript } from "@/components/inline-script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +34,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <InlineScript html={THEME_INIT_SCRIPT} />
       </head>
       <body className="min-h-full flex flex-col">
         <div className="fixed top-4 right-4 z-50">

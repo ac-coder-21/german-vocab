@@ -1,0 +1,170 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { motion } from "motion/react";
+import { ArrowLeft, ArrowRight, BookOpen, ListChecks, Pencil, Tags } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+import { AuroraBackground } from "@/components/aurora-background";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import type { NounSet } from "@/lib/db/nouns";
+
+type Mode = {
+  key: string;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  accent: string;
+  href?: (setNumber: number) => string;
+};
+
+const modes: Mode[] = [
+  {
+    key: "learn",
+    title: "Learn",
+    description: "Flip through flashcards — swipe for the next word.",
+    icon: BookOpen,
+    accent: "from-sky-500/15 text-sky-500",
+    href: (setNumber) => `/categories/nouns/${setNumber}/learn`,
+  },
+  {
+    key: "test-words",
+    title: "Test Words",
+    description: "Recall the German word for each English prompt.",
+    icon: ListChecks,
+    accent: "from-amber-500/15 text-amber-500",
+    href: (setNumber) => `/categories/nouns/${setNumber}/test-words`,
+  },
+  {
+    key: "test-gender",
+    title: "Test Gender",
+    description: "Practice der, die, das for every noun.",
+    icon: Tags,
+    accent: "from-violet-500/15 text-violet-500",
+    href: (setNumber) => `/categories/nouns/${setNumber}/test-gender`,
+  },
+];
+
+export function NounsHome({ sets }: { sets: NounSet[] }) {
+  const [selectedSet, setSelectedSet] = useState(sets[0]?.setNumber ?? 0);
+
+  return (
+    <div className="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-16 sm:py-24">
+      <AuroraBackground />
+
+      <div className="relative z-10 flex w-full max-w-3xl flex-col items-center gap-10">
+        <motion.div
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="flex flex-col items-center gap-4 text-center"
+        >
+          <Button
+            render={<Link href="/categories" />}
+            nativeButton={false}
+            variant="ghost"
+            size="sm"
+            className="absolute -top-4 left-0 sm:top-0"
+          >
+            <ArrowLeft className="size-4" />
+            Back
+          </Button>
+
+          <p className="text-sm font-medium text-muted-foreground">Substantive</p>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Nouns</h1>
+          <p className="max-w-lg text-balance text-lg text-muted-foreground">
+            Pick a set, then choose how you want to practice.
+          </p>
+        </motion.div>
+
+        {sets.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {sets.map((set) => (
+              <button
+                key={set.setNumber}
+                type="button"
+                onClick={() => setSelectedSet(set.setNumber)}
+                className={cn(
+                  "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
+                  selectedSet === set.setNumber
+                    ? "border-transparent bg-primary text-primary-foreground"
+                    : "border-border bg-card/60 text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Set {set.setNumber}
+                <span className="ml-1.5 opacity-70">({set.count})</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <Link
+          href="/categories/nouns/manage"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <Pencil className="size-3.5" />
+          Manage sets
+        </Link>
+
+        <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-3">
+          {modes.map((mode, index) => {
+            const enabled = Boolean(mode.href) && sets.length > 0;
+
+            const cardBody = (
+              <Card
+                className={cn(
+                  "group h-full gap-3 overflow-hidden bg-card/70 p-6 shadow-sm backdrop-blur transition-shadow",
+                  enabled
+                    ? "hover:shadow-md hover:ring-foreground/20"
+                    : "opacity-60"
+                )}
+              >
+                <div
+                  className={cn(
+                    "mb-2 flex size-12 items-center justify-center rounded-xl bg-gradient-to-br",
+                    mode.accent
+                  )}
+                >
+                  <mode.icon className="size-6" />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="text-xl font-semibold">{mode.title}</h2>
+                  {!enabled && <Badge variant="secondary">Coming soon</Badge>}
+                </div>
+                <p className="text-muted-foreground">{mode.description}</p>
+                {enabled && (
+                  <span className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-foreground/80">
+                    Start
+                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                  </span>
+                )}
+              </Card>
+            );
+
+            return (
+              <motion.div
+                key={mode.key}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.08, ease: "easeOut" }}
+                whileHover={enabled ? { y: -4 } : undefined}
+              >
+                {enabled && mode.href ? (
+                  <Link href={mode.href(selectedSet)} className="block h-full">
+                    {cardBody}
+                  </Link>
+                ) : (
+                  cardBody
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
