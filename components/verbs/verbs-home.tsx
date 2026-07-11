@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowLeft, ArrowRight, BookOpen, ListChecks, Pencil } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, ListChecks, Pencil, Repeat, SpellCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { AuroraBackground } from "@/components/aurora-background";
@@ -38,6 +38,22 @@ const modes: Mode[] = [
     icon: ListChecks,
     accent: "from-amber-500/15 text-amber-500",
     href: (setNumber) => `/categories/verbs/${setNumber}/test-words`,
+  },
+  {
+    key: "learn-conjugation",
+    title: "Learn Conjugation",
+    description: "ich, du, er/sie/es, wir, ihr, sie/Sie for each verb.",
+    icon: Repeat,
+    accent: "from-violet-500/15 text-violet-500",
+    href: (setNumber) => `/categories/verbs/${setNumber}/learn-conjugation`,
+  },
+  {
+    key: "test-conjugation",
+    title: "Test Conjugation",
+    description: "Type the correct form for a verb and pronoun.",
+    icon: SpellCheck,
+    accent: "from-rose-500/15 text-rose-500",
+    href: (setNumber) => `/categories/verbs/${setNumber}/test-conjugation`,
   },
 ];
 
@@ -102,7 +118,7 @@ export function VerbsHome({ sets }: { sets: VerbSet[] }) {
           Manage sets
         </Link>
 
-        <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {modes.map((mode, index) => {
             const enabled = Boolean(mode.href) && sets.length > 0;
 

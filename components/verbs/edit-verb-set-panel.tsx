@@ -7,6 +7,7 @@ import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Verb, VerbSet } from "@/lib/db/verbs";
+import { PRONOUNS } from "@/lib/verb-pronouns";
 import {
   addWordToSetAction,
   deleteVerbAction,
@@ -87,22 +88,40 @@ function VerbRow({ verb }: { verb: Verb }) {
   return (
     <form
       action={updateWithId}
-      className="flex flex-wrap items-center gap-2 rounded-xl border bg-background/60 p-3"
+      className="flex flex-col gap-3 rounded-xl border bg-background/60 p-3"
     >
-      <input name="german" defaultValue={verb.german} className={fieldClass} />
-      <input name="english" defaultValue={verb.english} className={fieldClass} />
-      <Button type="submit" variant="outline" size="sm">
-        Save
-      </Button>
-      <Button
-        type="submit"
-        formAction={deleteWithId}
-        variant="ghost"
-        size="icon"
-        aria-label="Delete verb"
-      >
-        <Trash2 className="size-4" />
-      </Button>
+      <div className="flex flex-wrap items-center gap-2">
+        <input name="german" defaultValue={verb.german} className={fieldClass} />
+        <input name="english" defaultValue={verb.english} className={fieldClass} />
+        <Button type="submit" variant="outline" size="sm">
+          Save
+        </Button>
+        <Button
+          type="submit"
+          formAction={deleteWithId}
+          variant="ghost"
+          size="icon"
+          aria-label="Delete verb"
+        >
+          <Trash2 className="size-4" />
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-2 md:grid-cols-6">
+        {PRONOUNS.map(({ key, label }) => (
+          <label key={key} className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-muted-foreground">
+              {label}
+            </span>
+            <input
+              name={key}
+              defaultValue={verb[key] ?? ""}
+              placeholder="—"
+              className={cn(fieldClass, "w-full")}
+            />
+          </label>
+        ))}
+      </div>
     </form>
   );
 }

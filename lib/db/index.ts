@@ -68,4 +68,21 @@ db.exec(`
   )
 `);
 
+// Adds a column to an existing table if it isn't there yet. Needed because
+// `CREATE TABLE IF NOT EXISTS` above is a no-op once the table already
+// exists, so new columns added later (like verb conjugations) wouldn't
+// otherwise show up for anyone who already has data.
+function ensureColumn(table: string, column: string, definition: string) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all() as {
+    name: string;
+  }[];
+  if (!columns.some((c) => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
+for (const pronoun of ["ich", "du", "er_sie_es", "wir", "ihr", "sie_formal"]) {
+  ensureColumn("verbs", pronoun, "TEXT");
+}
+
 export default db;

@@ -21,6 +21,8 @@ function revalidateVerbPaths() {
   revalidatePath("/categories/verbs/manage");
   revalidatePath("/categories/verbs/[set]/learn", "page");
   revalidatePath("/categories/verbs/[set]/test-words", "page");
+  revalidatePath("/categories/verbs/[set]/learn-conjugation", "page");
+  revalidatePath("/categories/verbs/[set]/test-conjugation", "page");
 }
 
 function parseWordRows(formData: FormData) {
@@ -94,7 +96,16 @@ export async function updateVerbAction(
 
   if (!german || !english) return;
 
-  updateVerb(id, { german, english });
+  updateVerb(id, {
+    german,
+    english,
+    ich: String(formData.get("ich") ?? "").trim(),
+    du: String(formData.get("du") ?? "").trim(),
+    er_sie_es: String(formData.get("er_sie_es") ?? "").trim(),
+    wir: String(formData.get("wir") ?? "").trim(),
+    ihr: String(formData.get("ihr") ?? "").trim(),
+    sie_formal: String(formData.get("sie_formal") ?? "").trim(),
+  });
   revalidateVerbPaths();
 }
 
