@@ -7,9 +7,8 @@ import { ArrowLeft, ArrowRight, RotateCcw, Volume2 } from "lucide-react";
 
 import { AuroraBackground } from "@/components/aurora-background";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { speakGerman } from "@/lib/speech";
-import type { Noun } from "@/lib/db/nouns";
+import type { Verb } from "@/lib/db/verbs";
 
 const SWIPE_THRESHOLD = 80;
 
@@ -29,26 +28,20 @@ const cardVariants: Variants = {
   }),
 };
 
-const artikelColor: Record<Noun["artikel"], string> = {
-  der: "text-sky-500",
-  die: "text-rose-500",
-  das: "text-emerald-500",
-};
-
 export function LearnDeck({
-  nouns,
+  verbs,
   setNumber,
 }: {
-  nouns: Noun[];
+  verbs: Verb[];
   setNumber: number;
 }) {
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [direction, setDirection] = useState(1);
 
-  const total = nouns.length;
+  const total = verbs.length;
   const finished = index >= total;
-  const current = nouns[index];
+  const current = verbs[index];
 
   useEffect(() => {
     return () => {
@@ -95,11 +88,15 @@ export function LearnDeck({
         <AuroraBackground />
         <div className="relative z-10 flex flex-col items-center gap-4">
           <h1 className="text-2xl font-bold tracking-tight">
-            Set {setNumber} has no words yet
+            Set {setNumber} has no verbs yet
           </h1>
-          <Button render={<Link href="/categories/nouns" />} nativeButton={false} variant="outline">
+          <Button
+            render={<Link href="/categories/verbs" />}
+            nativeButton={false}
+            variant="outline"
+          >
             <ArrowLeft className="size-4" />
-            Back to nouns
+            Back to verbs
           </Button>
         </div>
       </div>
@@ -113,7 +110,7 @@ export function LearnDeck({
       <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-8">
         <div className="flex w-full items-center justify-between">
           <Button
-            render={<Link href="/categories/nouns" />}
+            render={<Link href="/categories/verbs" />}
             nativeButton={false}
             variant="ghost"
             size="sm"
@@ -150,9 +147,6 @@ export function LearnDeck({
                 {revealed ? (
                   <div className="flex items-center gap-2">
                     <p className="text-4xl font-bold tracking-tight text-balance">
-                      <span className={cn(artikelColor[current.artikel])}>
-                        {current.artikel}
-                      </span>{" "}
                       {current.german}
                     </p>
                     <Button
@@ -162,7 +156,7 @@ export function LearnDeck({
                       aria-label="Hear pronunciation"
                       onClick={(e) => {
                         e.stopPropagation();
-                        speakGerman(`${current.artikel} ${current.german}`);
+                        speakGerman(current.german);
                       }}
                     >
                       <Volume2 className="size-5" />
@@ -192,7 +186,7 @@ export function LearnDeck({
                   Set {setNumber} complete!
                 </p>
                 <p className="text-muted-foreground">
-                  You reviewed all {total} words.
+                  You reviewed all {total} verbs.
                 </p>
                 <Button onClick={restart} variant="outline" className="mt-2">
                   <RotateCcw className="size-4" />
@@ -209,7 +203,7 @@ export function LearnDeck({
             size="icon"
             onClick={goPrev}
             disabled={index === 0}
-            aria-label="Previous word"
+            aria-label="Previous verb"
           >
             <ArrowLeft className="size-4" />
           </Button>
@@ -218,7 +212,7 @@ export function LearnDeck({
             size="icon"
             onClick={goNext}
             disabled={finished}
-            aria-label="Next word"
+            aria-label="Next verb"
           >
             <ArrowRight className="size-4" />
           </Button>

@@ -7,9 +7,8 @@ import { ArrowLeft, ArrowRight, RotateCcw, Volume2 } from "lucide-react";
 
 import { AuroraBackground } from "@/components/aurora-background";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { speakGerman } from "@/lib/speech";
-import type { Noun } from "@/lib/db/nouns";
+import type { Adjective } from "@/lib/db/adjectives";
 
 const SWIPE_THRESHOLD = 80;
 
@@ -29,26 +28,20 @@ const cardVariants: Variants = {
   }),
 };
 
-const artikelColor: Record<Noun["artikel"], string> = {
-  der: "text-sky-500",
-  die: "text-rose-500",
-  das: "text-emerald-500",
-};
-
 export function LearnDeck({
-  nouns,
+  adjectives,
   setNumber,
 }: {
-  nouns: Noun[];
+  adjectives: Adjective[];
   setNumber: number;
 }) {
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [direction, setDirection] = useState(1);
 
-  const total = nouns.length;
+  const total = adjectives.length;
   const finished = index >= total;
-  const current = nouns[index];
+  const current = adjectives[index];
 
   useEffect(() => {
     return () => {
@@ -97,9 +90,13 @@ export function LearnDeck({
           <h1 className="text-2xl font-bold tracking-tight">
             Set {setNumber} has no words yet
           </h1>
-          <Button render={<Link href="/categories/nouns" />} nativeButton={false} variant="outline">
+          <Button
+            render={<Link href="/categories/adjectives" />}
+            nativeButton={false}
+            variant="outline"
+          >
             <ArrowLeft className="size-4" />
-            Back to nouns
+            Back to adjectives
           </Button>
         </div>
       </div>
@@ -113,7 +110,7 @@ export function LearnDeck({
       <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-8">
         <div className="flex w-full items-center justify-between">
           <Button
-            render={<Link href="/categories/nouns" />}
+            render={<Link href="/categories/adjectives" />}
             nativeButton={false}
             variant="ghost"
             size="sm"
@@ -150,9 +147,6 @@ export function LearnDeck({
                 {revealed ? (
                   <div className="flex items-center gap-2">
                     <p className="text-4xl font-bold tracking-tight text-balance">
-                      <span className={cn(artikelColor[current.artikel])}>
-                        {current.artikel}
-                      </span>{" "}
                       {current.german}
                     </p>
                     <Button
@@ -162,7 +156,7 @@ export function LearnDeck({
                       aria-label="Hear pronunciation"
                       onClick={(e) => {
                         e.stopPropagation();
-                        speakGerman(`${current.artikel} ${current.german}`);
+                        speakGerman(current.german);
                       }}
                     >
                       <Volume2 className="size-5" />
