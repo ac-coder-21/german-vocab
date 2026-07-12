@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, type PanInfo, type Variants } from "motion/react";
-import { ArrowLeft, ArrowRight, RotateCcw, Volume2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, RotateCcw, Volume2 } from "lucide-react";
 
 import { AuroraBackground } from "@/components/aurora-background";
 import { Button } from "@/components/ui/button";
@@ -216,6 +216,23 @@ export function LearnDeck({
           >
             <ArrowRight className="size-4" />
           </Button>
+          {!finished && (
+            <Button
+              render={
+                <a
+                  href={`https://www.dict.cc/?s=${encodeURIComponent(current.german)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                />
+              }
+              nativeButton={false}
+              variant="outline"
+              size="icon"
+              aria-label="Look up on dict.cc"
+            >
+              <ExternalLink className="size-4" />
+            </Button>
+          )}
         </div>
       </div>
     </div>
