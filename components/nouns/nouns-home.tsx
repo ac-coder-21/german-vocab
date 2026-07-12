@@ -10,6 +10,7 @@ import { AuroraBackground } from "@/components/aurora-background";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { SetPicker } from "@/components/set-picker";
 import { cn } from "@/lib/utils";
 import type { NounSet } from "@/lib/db/nouns";
 
@@ -97,22 +98,7 @@ export function NounsHome({ sets }: { sets: NounSet[] }) {
         </motion.div>
 
         {sets.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {sets.map((set) => {
-              const isSelected = selectedSets.includes(set.setNumber);
-              return (
-                <Button
-                  key={set.setNumber}
-                  type="button"
-                  variant={isSelected ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => toggleSet(set.setNumber)}
-                >
-                  Set {set.setNumber} ({set.count})
-                </Button>
-              );
-            })}
-          </div>
+          <SetPicker sets={sets} selected={selectedSets} onToggle={toggleSet} />
         )}
 
         <Link

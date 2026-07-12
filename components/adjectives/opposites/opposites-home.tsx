@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, Pencil, Shuffle } from "lucide-react";
 import { AuroraBackground } from "@/components/aurora-background";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SetPicker } from "@/components/set-picker";
 import type { OppositeSet } from "@/lib/db/opposites";
 
 export function OppositesHome({ sets }: { sets: OppositeSet[] }) {
@@ -57,22 +58,7 @@ export function OppositesHome({ sets }: { sets: OppositeSet[] }) {
         </motion.div>
 
         {hasSets && (
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {sets.map((set) => {
-              const isSelected = selectedSets.includes(set.setNumber);
-              return (
-                <Button
-                  key={set.setNumber}
-                  type="button"
-                  variant={isSelected ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => toggleSet(set.setNumber)}
-                >
-                  Set {set.setNumber} ({set.count})
-                </Button>
-              );
-            })}
-          </div>
+          <SetPicker sets={sets} selected={selectedSets} onToggle={toggleSet} />
         )}
 
         <Link
