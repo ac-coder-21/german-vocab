@@ -13,7 +13,7 @@ export default async function TestGenderPage({
 
   if (!Number.isInteger(setNumber)) notFound();
 
-  const nouns = getNounsBySet(setNumber);
+  const nouns = await getNounsBySet(setNumber);
 
   return <TestGenderDeck nouns={nouns} setNumber={setNumber} />;
 }

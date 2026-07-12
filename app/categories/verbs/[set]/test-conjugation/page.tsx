@@ -13,7 +13,7 @@ export default async function TestConjugationPage({
 
   if (!Number.isInteger(setNumber)) notFound();
 
-  const verbs = getVerbsBySet(setNumber);
+  const verbs = await getVerbsBySet(setNumber);
 
   return <TestConjugationDeck verbs={verbs} setNumber={setNumber} />;
 }

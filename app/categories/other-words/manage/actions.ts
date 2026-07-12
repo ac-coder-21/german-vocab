@@ -54,9 +54,9 @@ export async function createSetAction(
     };
   }
 
-  const setNumber = getNextOtherWordSetNumber();
+  const setNumber = await getNextOtherWordSetNumber();
   for (const word of words) {
-    createOtherWord({ ...word, setNumber });
+    await createOtherWord({ ...word, setNumber });
   }
 
   revalidateOtherWordPaths();
@@ -79,7 +79,7 @@ export async function addWordToSetAction(
     return { status: "error", message: "Fill in both German and English." };
   }
 
-  createOtherWord({ german, english, setNumber });
+  await createOtherWord({ german, english, setNumber });
   revalidateOtherWordPaths();
 
   return { status: "success", message: `Added "${german}" to Set ${setNumber}.` };
@@ -94,17 +94,17 @@ export async function updateOtherWordAction(
 
   if (!german || !english) return;
 
-  updateOtherWord(id, { german, english });
+  await updateOtherWord(id, { german, english });
   revalidateOtherWordPaths();
 }
 
 export async function deleteOtherWordAction(id: number): Promise<void> {
-  deleteOtherWord(id);
+  await deleteOtherWord(id);
   revalidateOtherWordPaths();
 }
 
 export async function deleteOtherWordSetAction(setNumber: number): Promise<void> {
-  deleteOtherWordSet(setNumber);
+  await deleteOtherWordSet(setNumber);
   revalidateOtherWordPaths();
   redirect("/categories/other-words/manage");
 }

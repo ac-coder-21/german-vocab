@@ -11,14 +11,14 @@ export default async function ManageAdjectivesPage({
   searchParams: Promise<{ set?: string }>;
 }) {
   const { set } = await searchParams;
-  const sets = getAdjectiveSets();
+  const sets = await getAdjectiveSets();
 
   const parsedSet = set !== undefined ? Number(set) : sets[0]?.setNumber;
   const selectedSet =
     parsedSet !== undefined && Number.isInteger(parsedSet) ? parsedSet : undefined;
 
-  const adjectives = selectedSet !== undefined ? getAdjectivesBySet(selectedSet) : [];
-  const nextSetNumber = getNextAdjectiveSetNumber();
+  const adjectives = selectedSet !== undefined ? await getAdjectivesBySet(selectedSet) : [];
+  const nextSetNumber = await getNextAdjectiveSetNumber();
 
   return (
     <ManageAdjectiveSets

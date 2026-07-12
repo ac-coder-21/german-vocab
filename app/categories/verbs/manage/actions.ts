@@ -56,9 +56,9 @@ export async function createSetAction(
     };
   }
 
-  const setNumber = getNextVerbSetNumber();
+  const setNumber = await getNextVerbSetNumber();
   for (const word of words) {
-    createVerb({ ...word, setNumber });
+    await createVerb({ ...word, setNumber });
   }
 
   revalidateVerbPaths();
@@ -81,7 +81,7 @@ export async function addWordToSetAction(
     return { status: "error", message: "Fill in both German and English." };
   }
 
-  createVerb({ german, english, setNumber });
+  await createVerb({ german, english, setNumber });
   revalidateVerbPaths();
 
   return { status: "success", message: `Added "${german}" to Set ${setNumber}.` };
@@ -96,7 +96,7 @@ export async function updateVerbAction(
 
   if (!german || !english) return;
 
-  updateVerb(id, {
+  await updateVerb(id, {
     german,
     english,
     ich: String(formData.get("ich") ?? "").trim(),
@@ -110,12 +110,12 @@ export async function updateVerbAction(
 }
 
 export async function deleteVerbAction(id: number): Promise<void> {
-  deleteVerb(id);
+  await deleteVerb(id);
   revalidateVerbPaths();
 }
 
 export async function deleteVerbSetAction(setNumber: number): Promise<void> {
-  deleteVerbSet(setNumber);
+  await deleteVerbSet(setNumber);
   revalidateVerbPaths();
   redirect("/categories/verbs/manage");
 }

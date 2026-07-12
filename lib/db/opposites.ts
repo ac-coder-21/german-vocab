@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import { query, ready } from "@/lib/db";
 
 export type Opposite = {
   id: number;
@@ -25,70 +25,78 @@ const DUMMY_SET_0: Omit<Opposite, "id" | "set_number">[] = [
   { word: "breit", opposite: "schmal" },
 ];
 
-function seedIfEmpty() {
-  const { count } = db
-    .prepare("SELECT COUNT(*) as count FROM opposites")
-    .get() as { count: number };
-  if (count > 0) return;
+async function seedIfEmpty() {
+  await ready();
 
-  const insert = db.prepare(
-    "INSERT INTO opposites (word, opposite, set_number) VALUES (?, ?, 0)"
+  const [{ count }] = await query<{ count: string }>(
+    "SELECT COUNT(*) as count FROM opposites"
   );
+  if (Number(count) > 0) return;
+
   for (const pair of DUMMY_SET_0) {
-    insert.run(pair.word, pair.opposite);
+    await query(
+      "INSERT INTO opposites (word, opposite, set_number) VALUES ($1, $2, 0)",
+      [pair.word, pair.opposite]
+    );
   }
 }
 
-seedIfEmpty();
+const seeded = seedIfEmpty();
 
-export function getOppositeSets(): OppositeSet[] {
-  const rows = db
-    .prepare(
-      "SELECT set_number as setNumber, COUNT(*) as count FROM opposites GROUP BY set_number ORDER BY set_number"
-    )
-    .all() as OppositeSet[];
-  return rows.map((row) => ({ ...row }));
+export async function getOppositeSets(): Promise<OppositeSet[]> {
+  await seeded;
+  const rows = await query<{ setNumber: number; count: string }>(
+    `SELECT set_number as "setNumber", COUNT(*) as count FROM opposites
+     GROUP BY set_number ORDER BY set_number`
+  );
+  return rows.map((row) => ({ setNumber: row.setNumber, count: Number(row.count) }));
 }
 
-export function getOppositesBySet(setNumber: number): Opposite[] {
-  const rows = db
-    .prepare("SELECT * FROM opposites WHERE set_number = ? ORDER BY id")
-    .all(setNumber) as Opposite[];
-  return rows.map((row) => ({ ...row }));
+export async function getOppositesBySet(setNumber: number): Promise<Opposite[]> {
+  await seeded;
+  return query<Opposite>("SELECT * FROM opposites WHERE set_number = $1 ORDER BY id", [
+    setNumber,
+  ]);
 }
 
-export function getNextOppositeSetNumber(): number {
-  const { maxSet } = db
-    .prepare("SELECT MAX(set_number) as maxSet FROM opposites")
-    .get() as { maxSet: number | null };
+export async function getNextOppositeSetNumber(): Promise<number> {
+  await seeded;
+  const [{ maxSet }] = await query<{ maxSet: number | null }>(
+    'SELECT MAX(set_number) as "maxSet" FROM opposites'
+  );
   return maxSet === null ? 0 : maxSet + 1;
 }
 
-export function createOpposite(input: {
+export async function createOpposite(input: {
   word: string;
   opposite: string;
   setNumber: number;
-}): void {
-  db.prepare(
-    "INSERT INTO opposites (word, opposite, set_number) VALUES (?, ?, ?)"
-  ).run(input.word, input.opposite, input.setNumber);
-}
-
-export function updateOpposite(
-  id: number,
-  input: { word: string; opposite: string }
-): void {
-  db.prepare("UPDATE opposites SET word = ?, opposite = ? WHERE id = ?").run(
-    input.word,
-    input.opposite,
-    id
+}): Promise<void> {
+  await seeded;
+  await query(
+    "INSERT INTO opposites (word, opposite, set_number) VALUES ($1, $2, $3)",
+    [input.word, input.opposite, input.setNumber]
   );
 }
 
-export function deleteOpposite(id: number): void {
-  db.prepare("DELETE FROM opposites WHERE id = ?").run(id);
+export async function updateOpposite(
+  id: number,
+  input: { word: string; opposite: string }
+): Promise<void> {
+  await seeded;
+  await query("UPDATE opposites SET word = $1, opposite = $2 WHERE id = $3", [
+    input.word,
+    input.opposite,
+    id,
+  ]);
 }
 
-export function deleteOppositeSet(setNumber: number): void {
-  db.prepare("DELETE FROM opposites WHERE set_number = ?").run(setNumber);
+export async function deleteOpposite(id: number): Promise<void> {
+  await seeded;
+  await query("DELETE FROM opposites WHERE id = $1", [id]);
+}
+
+export async function deleteOppositeSet(setNumber: number): Promise<void> {
+  await seeded;
+  await query("DELETE FROM opposites WHERE set_number = $1", [setNumber]);
 }

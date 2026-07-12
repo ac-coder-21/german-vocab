@@ -1,5 +1,19 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Database
+
+Data is stored in Postgres (via `pg`). Set `POSTGRES_URL` (or `DATABASE_URL`) to a
+connection string before running the app — the schema and dummy word sets are
+created automatically on first request.
+
+- **Local dev**: copy `.env.local.example` to `.env.local` and fill in a
+  connection string (e.g. a free [Neon](https://neon.tech) project, or any
+  local Postgres instance).
+- **Vercel**: add a Postgres database from the project's Storage tab
+  (Neon-backed). Vercel injects `POSTGRES_URL` automatically for deployed
+  environments; run `vercel env pull .env.local` to get the same value
+  locally.
+
 ## Getting Started
 
 First, run the development server:

@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import { query, ready } from "@/lib/db";
 import type { Conjugation } from "@/lib/verb-pronouns";
 
 export type Verb = {
@@ -37,26 +37,28 @@ const DUMMY_SET_0: ({ german: string; english: string } & Conjugation)[] = [
   { german: "schlafen", english: "to sleep", ich: "schlafe", du: "schläfst", er_sie_es: "schläft", wir: "schlafen", ihr: "schlaft", sie_formal: "schlafen" },
 ];
 
-function seedIfEmpty() {
-  const { count } = db
-    .prepare("SELECT COUNT(*) as count FROM verbs")
-    .get() as { count: number };
-  if (count > 0) return;
+async function seedIfEmpty() {
+  await ready();
 
-  const insert = db.prepare(
-    `INSERT INTO verbs (german, english, set_number, ich, du, er_sie_es, wir, ihr, sie_formal)
-     VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?)`
+  const [{ count }] = await query<{ count: string }>(
+    "SELECT COUNT(*) as count FROM verbs"
   );
+  if (Number(count) > 0) return;
+
   for (const verb of DUMMY_SET_0) {
-    insert.run(
-      verb.german,
-      verb.english,
-      verb.ich,
-      verb.du,
-      verb.er_sie_es,
-      verb.wir,
-      verb.ihr,
-      verb.sie_formal
+    await query(
+      `INSERT INTO verbs (german, english, set_number, ich, du, er_sie_es, wir, ihr, sie_formal)
+       VALUES ($1, $2, 0, $3, $4, $5, $6, $7, $8)`,
+      [
+        verb.german,
+        verb.english,
+        verb.ich,
+        verb.du,
+        verb.er_sie_es,
+        verb.wir,
+        verb.ihr,
+        verb.sie_formal,
+      ]
     );
   }
 }
@@ -65,69 +67,74 @@ function seedIfEmpty() {
 // missing them — covers people who already had Set 0 seeded before
 // conjugation columns existed. Never touches rows that already have a
 // value, so user edits are safe.
-function backfillDummyConjugations() {
-  const rows = db
-    .prepare("SELECT id, german FROM verbs WHERE ich IS NULL")
-    .all() as { id: number; german: string }[];
+async function backfillDummyConjugations() {
+  await ready();
+
+  const rows = await query<{ id: number; german: string }>(
+    "SELECT id, german FROM verbs WHERE ich IS NULL"
+  );
   if (rows.length === 0) return;
 
   const known = new Map(DUMMY_SET_0.map((v) => [v.german, v]));
-  const update = db.prepare(
-    `UPDATE verbs SET ich = ?, du = ?, er_sie_es = ?, wir = ?, ihr = ?, sie_formal = ?
-     WHERE id = ?`
-  );
   for (const row of rows) {
     const conjugation = known.get(row.german);
     if (!conjugation) continue;
-    update.run(
-      conjugation.ich,
-      conjugation.du,
-      conjugation.er_sie_es,
-      conjugation.wir,
-      conjugation.ihr,
-      conjugation.sie_formal,
-      row.id
+    await query(
+      `UPDATE verbs SET ich = $1, du = $2, er_sie_es = $3, wir = $4, ihr = $5, sie_formal = $6
+       WHERE id = $7`,
+      [
+        conjugation.ich,
+        conjugation.du,
+        conjugation.er_sie_es,
+        conjugation.wir,
+        conjugation.ihr,
+        conjugation.sie_formal,
+        row.id,
+      ]
     );
   }
 }
 
-seedIfEmpty();
-backfillDummyConjugations();
+const seeded = seedIfEmpty().then(() => backfillDummyConjugations());
 
-export function getVerbSets(): VerbSet[] {
-  const rows = db
-    .prepare(
-      "SELECT set_number as setNumber, COUNT(*) as count FROM verbs GROUP BY set_number ORDER BY set_number"
-    )
-    .all() as VerbSet[];
-  return rows.map((row) => ({ ...row }));
+export async function getVerbSets(): Promise<VerbSet[]> {
+  await seeded;
+  const rows = await query<{ setNumber: number; count: string }>(
+    `SELECT set_number as "setNumber", COUNT(*) as count FROM verbs
+     GROUP BY set_number ORDER BY set_number`
+  );
+  return rows.map((row) => ({ setNumber: row.setNumber, count: Number(row.count) }));
 }
 
-export function getVerbsBySet(setNumber: number): Verb[] {
-  const rows = db
-    .prepare("SELECT * FROM verbs WHERE set_number = ? ORDER BY id")
-    .all(setNumber) as Verb[];
-  return rows.map((row) => ({ ...row }));
+export async function getVerbsBySet(setNumber: number): Promise<Verb[]> {
+  await seeded;
+  return query<Verb>("SELECT * FROM verbs WHERE set_number = $1 ORDER BY id", [
+    setNumber,
+  ]);
 }
 
-export function getNextVerbSetNumber(): number {
-  const { maxSet } = db
-    .prepare("SELECT MAX(set_number) as maxSet FROM verbs")
-    .get() as { maxSet: number | null };
+export async function getNextVerbSetNumber(): Promise<number> {
+  await seeded;
+  const [{ maxSet }] = await query<{ maxSet: number | null }>(
+    'SELECT MAX(set_number) as "maxSet" FROM verbs'
+  );
   return maxSet === null ? 0 : maxSet + 1;
 }
 
-export function createVerb(input: {
+export async function createVerb(input: {
   german: string;
   english: string;
   setNumber: number;
-}): void {
-  db.prepare(
-    "INSERT INTO verbs (german, english, set_number) VALUES (?, ?, ?)"
-  ).run(input.german, input.english, input.setNumber);
+}): Promise<void> {
+  await seeded;
+  await query("INSERT INTO verbs (german, english, set_number) VALUES ($1, $2, $3)", [
+    input.german,
+    input.english,
+    input.setNumber,
+  ]);
 }
 
-export function updateVerb(
+export async function updateVerb(
   id: number,
   input: {
     german: string;
@@ -139,27 +146,31 @@ export function updateVerb(
     ihr: string;
     sie_formal: string;
   }
-): void {
-  db.prepare(
-    `UPDATE verbs SET german = ?, english = ?, ich = ?, du = ?, er_sie_es = ?,
-     wir = ?, ihr = ?, sie_formal = ? WHERE id = ?`
-  ).run(
-    input.german,
-    input.english,
-    input.ich || null,
-    input.du || null,
-    input.er_sie_es || null,
-    input.wir || null,
-    input.ihr || null,
-    input.sie_formal || null,
-    id
+): Promise<void> {
+  await seeded;
+  await query(
+    `UPDATE verbs SET german = $1, english = $2, ich = $3, du = $4, er_sie_es = $5,
+     wir = $6, ihr = $7, sie_formal = $8 WHERE id = $9`,
+    [
+      input.german,
+      input.english,
+      input.ich || null,
+      input.du || null,
+      input.er_sie_es || null,
+      input.wir || null,
+      input.ihr || null,
+      input.sie_formal || null,
+      id,
+    ]
   );
 }
 
-export function deleteVerb(id: number): void {
-  db.prepare("DELETE FROM verbs WHERE id = ?").run(id);
+export async function deleteVerb(id: number): Promise<void> {
+  await seeded;
+  await query("DELETE FROM verbs WHERE id = $1", [id]);
 }
 
-export function deleteVerbSet(setNumber: number): void {
-  db.prepare("DELETE FROM verbs WHERE set_number = ?").run(setNumber);
+export async function deleteVerbSet(setNumber: number): Promise<void> {
+  await seeded;
+  await query("DELETE FROM verbs WHERE set_number = $1", [setNumber]);
 }

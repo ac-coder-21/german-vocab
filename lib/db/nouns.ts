@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import { query, ready } from "@/lib/db";
 
 export type Artikel = "der" | "die" | "das";
 
@@ -33,69 +33,80 @@ const DUMMY_SET_0: Omit<Noun, "id" | "set_number">[] = [
   { german: "Kind", english: "child", artikel: "das" },
 ];
 
-function seedIfEmpty() {
-  const { count } = db
-    .prepare("SELECT COUNT(*) as count FROM nouns")
-    .get() as { count: number };
-  if (count > 0) return;
+async function seedIfEmpty() {
+  await ready();
 
-  const insert = db.prepare(
-    "INSERT INTO nouns (german, english, artikel, set_number) VALUES (?, ?, ?, 0)"
+  const [{ count }] = await query<{ count: string }>(
+    "SELECT COUNT(*) as count FROM nouns"
   );
+  if (Number(count) > 0) return;
+
   for (const noun of DUMMY_SET_0) {
-    insert.run(noun.german, noun.english, noun.artikel);
+    await query(
+      "INSERT INTO nouns (german, english, artikel, set_number) VALUES ($1, $2, $3, 0)",
+      [noun.german, noun.english, noun.artikel]
+    );
   }
 }
 
-seedIfEmpty();
+const seeded = seedIfEmpty();
 
-export function getNounSets(): NounSet[] {
-  const rows = db
-    .prepare(
-      "SELECT set_number as setNumber, COUNT(*) as count FROM nouns GROUP BY set_number ORDER BY set_number"
-    )
-    .all() as NounSet[];
-  return rows.map((row) => ({ ...row }));
+export async function getNounSets(): Promise<NounSet[]> {
+  await seeded;
+  const rows = await query<{ setNumber: number; count: string }>(
+    `SELECT set_number as "setNumber", COUNT(*) as count FROM nouns
+     GROUP BY set_number ORDER BY set_number`
+  );
+  return rows.map((row) => ({ setNumber: row.setNumber, count: Number(row.count) }));
 }
 
-export function getNounsBySet(setNumber: number): Noun[] {
-  const rows = db
-    .prepare("SELECT * FROM nouns WHERE set_number = ? ORDER BY id")
-    .all(setNumber) as Noun[];
-  return rows.map((row) => ({ ...row }));
+export async function getNounsBySet(setNumber: number): Promise<Noun[]> {
+  await seeded;
+  return query<Noun>("SELECT * FROM nouns WHERE set_number = $1 ORDER BY id", [
+    setNumber,
+  ]);
 }
 
-export function getNextSetNumber(): number {
-  const { maxSet } = db
-    .prepare("SELECT MAX(set_number) as maxSet FROM nouns")
-    .get() as { maxSet: number | null };
+export async function getNextSetNumber(): Promise<number> {
+  await seeded;
+  const [{ maxSet }] = await query<{ maxSet: number | null }>(
+    'SELECT MAX(set_number) as "maxSet" FROM nouns'
+  );
   return maxSet === null ? 0 : maxSet + 1;
 }
 
-export function createNoun(input: {
+export async function createNoun(input: {
   german: string;
   english: string;
   artikel: Artikel;
   setNumber: number;
-}): void {
-  db.prepare(
-    "INSERT INTO nouns (german, english, artikel, set_number) VALUES (?, ?, ?, ?)"
-  ).run(input.german, input.english, input.artikel, input.setNumber);
+}): Promise<void> {
+  await seeded;
+  await query(
+    "INSERT INTO nouns (german, english, artikel, set_number) VALUES ($1, $2, $3, $4)",
+    [input.german, input.english, input.artikel, input.setNumber]
+  );
 }
 
-export function updateNoun(
+export async function updateNoun(
   id: number,
   input: { german: string; english: string; artikel: Artikel }
-): void {
-  db.prepare(
-    "UPDATE nouns SET german = ?, english = ?, artikel = ? WHERE id = ?"
-  ).run(input.german, input.english, input.artikel, id);
+): Promise<void> {
+  await seeded;
+  await query("UPDATE nouns SET german = $1, english = $2, artikel = $3 WHERE id = $4", [
+    input.german,
+    input.english,
+    input.artikel,
+    id,
+  ]);
 }
 
-export function deleteNoun(id: number): void {
-  db.prepare("DELETE FROM nouns WHERE id = ?").run(id);
+export async function deleteNoun(id: number): Promise<void> {
+  await seeded;
+  await query("DELETE FROM nouns WHERE id = $1", [id]);
 }
 
-export function deleteSet(setNumber: number): void {
-  db.prepare("DELETE FROM nouns WHERE set_number = ?").run(setNumber);
+export async function deleteSet(setNumber: number): Promise<void> {
+  await seeded;
+  await query("DELETE FROM nouns WHERE set_number = $1", [setNumber]);
 }

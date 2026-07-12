@@ -54,9 +54,9 @@ export async function createSetAction(
     };
   }
 
-  const setNumber = getNextAdjectiveSetNumber();
+  const setNumber = await getNextAdjectiveSetNumber();
   for (const word of words) {
-    createAdjective({ ...word, setNumber });
+    await createAdjective({ ...word, setNumber });
   }
 
   revalidateAdjectivePaths();
@@ -79,7 +79,7 @@ export async function addWordToSetAction(
     return { status: "error", message: "Fill in both German and English." };
   }
 
-  createAdjective({ german, english, setNumber });
+  await createAdjective({ german, english, setNumber });
   revalidateAdjectivePaths();
 
   return { status: "success", message: `Added "${german}" to Set ${setNumber}.` };
@@ -94,17 +94,17 @@ export async function updateAdjectiveAction(
 
   if (!german || !english) return;
 
-  updateAdjective(id, { german, english });
+  await updateAdjective(id, { german, english });
   revalidateAdjectivePaths();
 }
 
 export async function deleteAdjectiveAction(id: number): Promise<void> {
-  deleteAdjective(id);
+  await deleteAdjective(id);
   revalidateAdjectivePaths();
 }
 
 export async function deleteAdjectiveSetAction(setNumber: number): Promise<void> {
-  deleteAdjectiveSet(setNumber);
+  await deleteAdjectiveSet(setNumber);
   revalidateAdjectivePaths();
   redirect("/categories/adjectives/manage");
 }

@@ -62,9 +62,9 @@ export async function createSetAction(
     };
   }
 
-  const setNumber = getNextSetNumber();
+  const setNumber = await getNextSetNumber();
   for (const word of words) {
-    createNoun({ ...word, setNumber });
+    await createNoun({ ...word, setNumber });
   }
 
   revalidateNounPaths();
@@ -88,7 +88,7 @@ export async function addWordToSetAction(
     return { status: "error", message: "Fill in German, English, and artikel." };
   }
 
-  createNoun({ german, english, artikel, setNumber });
+  await createNoun({ german, english, artikel, setNumber });
   revalidateNounPaths();
 
   return { status: "success", message: `Added "${german}" to Set ${setNumber}.` };
@@ -104,17 +104,17 @@ export async function updateNounAction(
 
   if (!german || !english || !isArtikel(artikel)) return;
 
-  updateNoun(id, { german, english, artikel });
+  await updateNoun(id, { german, english, artikel });
   revalidateNounPaths();
 }
 
 export async function deleteNounAction(id: number): Promise<void> {
-  deleteNoun(id);
+  await deleteNoun(id);
   revalidateNounPaths();
 }
 
 export async function deleteSetAction(setNumber: number): Promise<void> {
-  deleteSet(setNumber);
+  await deleteSet(setNumber);
   revalidateNounPaths();
   redirect("/categories/nouns/manage");
 }

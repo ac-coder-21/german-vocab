@@ -13,7 +13,7 @@ export default async function OppositesTestPage({
 
   if (!Number.isInteger(setNumber)) notFound();
 
-  const pairs = getOppositesBySet(setNumber);
+  const pairs = await getOppositesBySet(setNumber);
 
   return <OppositesTestDeck pairs={pairs} setNumber={setNumber} />;
 }

@@ -13,7 +13,7 @@ export default async function TestWordsPage({
 
   if (!Number.isInteger(setNumber)) notFound();
 
-  const nouns = getNounsBySet(setNumber);
+  const nouns = await getNounsBySet(setNumber);
 
   return <TestWordsDeck nouns={nouns} setNumber={setNumber} />;
 }

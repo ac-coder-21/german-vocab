@@ -13,7 +13,7 @@ export default async function LearnPage({
 
   if (!Number.isInteger(setNumber)) notFound();
 
-  const adjectives = getAdjectivesBySet(setNumber);
+  const adjectives = await getAdjectivesBySet(setNumber);
 
   return <LearnDeck adjectives={adjectives} setNumber={setNumber} />;
 }

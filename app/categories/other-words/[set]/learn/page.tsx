@@ -13,7 +13,7 @@ export default async function LearnPage({
 
   if (!Number.isInteger(setNumber)) notFound();
 
-  const words = getOtherWordsBySet(setNumber);
+  const words = await getOtherWordsBySet(setNumber);
 
   return <LearnDeck words={words} setNumber={setNumber} />;
 }

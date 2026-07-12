@@ -11,14 +11,14 @@ export default async function ManageVerbsPage({
   searchParams: Promise<{ set?: string }>;
 }) {
   const { set } = await searchParams;
-  const sets = getVerbSets();
+  const sets = await getVerbSets();
 
   const parsedSet = set !== undefined ? Number(set) : sets[0]?.setNumber;
   const selectedSet =
     parsedSet !== undefined && Number.isInteger(parsedSet) ? parsedSet : undefined;
 
-  const verbs = selectedSet !== undefined ? getVerbsBySet(selectedSet) : [];
-  const nextSetNumber = getNextVerbSetNumber();
+  const verbs = selectedSet !== undefined ? await getVerbsBySet(selectedSet) : [];
+  const nextSetNumber = await getNextVerbSetNumber();
 
   return (
     <ManageVerbSets

@@ -11,14 +11,14 @@ export default async function ManageOppositesPage({
   searchParams: Promise<{ set?: string }>;
 }) {
   const { set } = await searchParams;
-  const sets = getOppositeSets();
+  const sets = await getOppositeSets();
 
   const parsedSet = set !== undefined ? Number(set) : sets[0]?.setNumber;
   const selectedSet =
     parsedSet !== undefined && Number.isInteger(parsedSet) ? parsedSet : undefined;
 
-  const opposites = selectedSet !== undefined ? getOppositesBySet(selectedSet) : [];
-  const nextSetNumber = getNextOppositeSetNumber();
+  const opposites = selectedSet !== undefined ? await getOppositesBySet(selectedSet) : [];
+  const nextSetNumber = await getNextOppositeSetNumber();
 
   return (
     <ManageOppositeSets

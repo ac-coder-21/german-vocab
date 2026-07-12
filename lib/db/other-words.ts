@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import { query, ready } from "@/lib/db";
 
 export type OtherWord = {
   id: number;
@@ -30,70 +30,79 @@ const DUMMY_SET_0: Omit<OtherWord, "id" | "set_number">[] = [
   { german: "vielleicht", english: "maybe" },
 ];
 
-function seedIfEmpty() {
-  const { count } = db
-    .prepare("SELECT COUNT(*) as count FROM other_words")
-    .get() as { count: number };
-  if (count > 0) return;
+async function seedIfEmpty() {
+  await ready();
 
-  const insert = db.prepare(
-    "INSERT INTO other_words (german, english, set_number) VALUES (?, ?, 0)"
+  const [{ count }] = await query<{ count: string }>(
+    "SELECT COUNT(*) as count FROM other_words"
   );
+  if (Number(count) > 0) return;
+
   for (const word of DUMMY_SET_0) {
-    insert.run(word.german, word.english);
+    await query(
+      "INSERT INTO other_words (german, english, set_number) VALUES ($1, $2, 0)",
+      [word.german, word.english]
+    );
   }
 }
 
-seedIfEmpty();
+const seeded = seedIfEmpty();
 
-export function getOtherWordSets(): OtherWordSet[] {
-  const rows = db
-    .prepare(
-      "SELECT set_number as setNumber, COUNT(*) as count FROM other_words GROUP BY set_number ORDER BY set_number"
-    )
-    .all() as OtherWordSet[];
-  return rows.map((row) => ({ ...row }));
+export async function getOtherWordSets(): Promise<OtherWordSet[]> {
+  await seeded;
+  const rows = await query<{ setNumber: number; count: string }>(
+    `SELECT set_number as "setNumber", COUNT(*) as count FROM other_words
+     GROUP BY set_number ORDER BY set_number`
+  );
+  return rows.map((row) => ({ setNumber: row.setNumber, count: Number(row.count) }));
 }
 
-export function getOtherWordsBySet(setNumber: number): OtherWord[] {
-  const rows = db
-    .prepare("SELECT * FROM other_words WHERE set_number = ? ORDER BY id")
-    .all(setNumber) as OtherWord[];
-  return rows.map((row) => ({ ...row }));
-}
-
-export function getNextOtherWordSetNumber(): number {
-  const { maxSet } = db
-    .prepare("SELECT MAX(set_number) as maxSet FROM other_words")
-    .get() as { maxSet: number | null };
-  return maxSet === null ? 0 : maxSet + 1;
-}
-
-export function createOtherWord(input: {
-  german: string;
-  english: string;
-  setNumber: number;
-}): void {
-  db.prepare(
-    "INSERT INTO other_words (german, english, set_number) VALUES (?, ?, ?)"
-  ).run(input.german, input.english, input.setNumber);
-}
-
-export function updateOtherWord(
-  id: number,
-  input: { german: string; english: string }
-): void {
-  db.prepare("UPDATE other_words SET german = ?, english = ? WHERE id = ?").run(
-    input.german,
-    input.english,
-    id
+export async function getOtherWordsBySet(setNumber: number): Promise<OtherWord[]> {
+  await seeded;
+  return query<OtherWord>(
+    "SELECT * FROM other_words WHERE set_number = $1 ORDER BY id",
+    [setNumber]
   );
 }
 
-export function deleteOtherWord(id: number): void {
-  db.prepare("DELETE FROM other_words WHERE id = ?").run(id);
+export async function getNextOtherWordSetNumber(): Promise<number> {
+  await seeded;
+  const [{ maxSet }] = await query<{ maxSet: number | null }>(
+    'SELECT MAX(set_number) as "maxSet" FROM other_words'
+  );
+  return maxSet === null ? 0 : maxSet + 1;
 }
 
-export function deleteOtherWordSet(setNumber: number): void {
-  db.prepare("DELETE FROM other_words WHERE set_number = ?").run(setNumber);
+export async function createOtherWord(input: {
+  german: string;
+  english: string;
+  setNumber: number;
+}): Promise<void> {
+  await seeded;
+  await query(
+    "INSERT INTO other_words (german, english, set_number) VALUES ($1, $2, $3)",
+    [input.german, input.english, input.setNumber]
+  );
+}
+
+export async function updateOtherWord(
+  id: number,
+  input: { german: string; english: string }
+): Promise<void> {
+  await seeded;
+  await query("UPDATE other_words SET german = $1, english = $2 WHERE id = $3", [
+    input.german,
+    input.english,
+    id,
+  ]);
+}
+
+export async function deleteOtherWord(id: number): Promise<void> {
+  await seeded;
+  await query("DELETE FROM other_words WHERE id = $1", [id]);
+}
+
+export async function deleteOtherWordSet(setNumber: number): Promise<void> {
+  await seeded;
+  await query("DELETE FROM other_words WHERE set_number = $1", [setNumber]);
 }

@@ -1,7 +1,7 @@
 import { getNounSets } from "@/lib/db/nouns";
 import { NounsHome } from "@/components/nouns/nouns-home";
 
-export default function NounsPage() {
-  const sets = getNounSets();
+export default async function NounsPage() {
+  const sets = await getNounSets();
   return <NounsHome sets={sets} />;
 }

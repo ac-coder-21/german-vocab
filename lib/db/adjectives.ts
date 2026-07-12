@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import { query, ready } from "@/lib/db";
 
 export type Adjective = {
   id: number;
@@ -30,70 +30,79 @@ const DUMMY_SET_0: Omit<Adjective, "id" | "set_number">[] = [
   { german: "glücklich", english: "happy" },
 ];
 
-function seedIfEmpty() {
-  const { count } = db
-    .prepare("SELECT COUNT(*) as count FROM adjectives")
-    .get() as { count: number };
-  if (count > 0) return;
+async function seedIfEmpty() {
+  await ready();
 
-  const insert = db.prepare(
-    "INSERT INTO adjectives (german, english, set_number) VALUES (?, ?, 0)"
+  const [{ count }] = await query<{ count: string }>(
+    "SELECT COUNT(*) as count FROM adjectives"
   );
+  if (Number(count) > 0) return;
+
   for (const adjective of DUMMY_SET_0) {
-    insert.run(adjective.german, adjective.english);
+    await query(
+      "INSERT INTO adjectives (german, english, set_number) VALUES ($1, $2, 0)",
+      [adjective.german, adjective.english]
+    );
   }
 }
 
-seedIfEmpty();
+const seeded = seedIfEmpty();
 
-export function getAdjectiveSets(): AdjectiveSet[] {
-  const rows = db
-    .prepare(
-      "SELECT set_number as setNumber, COUNT(*) as count FROM adjectives GROUP BY set_number ORDER BY set_number"
-    )
-    .all() as AdjectiveSet[];
-  return rows.map((row) => ({ ...row }));
+export async function getAdjectiveSets(): Promise<AdjectiveSet[]> {
+  await seeded;
+  const rows = await query<{ setNumber: number; count: string }>(
+    `SELECT set_number as "setNumber", COUNT(*) as count FROM adjectives
+     GROUP BY set_number ORDER BY set_number`
+  );
+  return rows.map((row) => ({ setNumber: row.setNumber, count: Number(row.count) }));
 }
 
-export function getAdjectivesBySet(setNumber: number): Adjective[] {
-  const rows = db
-    .prepare("SELECT * FROM adjectives WHERE set_number = ? ORDER BY id")
-    .all(setNumber) as Adjective[];
-  return rows.map((row) => ({ ...row }));
-}
-
-export function getNextAdjectiveSetNumber(): number {
-  const { maxSet } = db
-    .prepare("SELECT MAX(set_number) as maxSet FROM adjectives")
-    .get() as { maxSet: number | null };
-  return maxSet === null ? 0 : maxSet + 1;
-}
-
-export function createAdjective(input: {
-  german: string;
-  english: string;
-  setNumber: number;
-}): void {
-  db.prepare(
-    "INSERT INTO adjectives (german, english, set_number) VALUES (?, ?, ?)"
-  ).run(input.german, input.english, input.setNumber);
-}
-
-export function updateAdjective(
-  id: number,
-  input: { german: string; english: string }
-): void {
-  db.prepare("UPDATE adjectives SET german = ?, english = ? WHERE id = ?").run(
-    input.german,
-    input.english,
-    id
+export async function getAdjectivesBySet(setNumber: number): Promise<Adjective[]> {
+  await seeded;
+  return query<Adjective>(
+    "SELECT * FROM adjectives WHERE set_number = $1 ORDER BY id",
+    [setNumber]
   );
 }
 
-export function deleteAdjective(id: number): void {
-  db.prepare("DELETE FROM adjectives WHERE id = ?").run(id);
+export async function getNextAdjectiveSetNumber(): Promise<number> {
+  await seeded;
+  const [{ maxSet }] = await query<{ maxSet: number | null }>(
+    'SELECT MAX(set_number) as "maxSet" FROM adjectives'
+  );
+  return maxSet === null ? 0 : maxSet + 1;
 }
 
-export function deleteAdjectiveSet(setNumber: number): void {
-  db.prepare("DELETE FROM adjectives WHERE set_number = ?").run(setNumber);
+export async function createAdjective(input: {
+  german: string;
+  english: string;
+  setNumber: number;
+}): Promise<void> {
+  await seeded;
+  await query(
+    "INSERT INTO adjectives (german, english, set_number) VALUES ($1, $2, $3)",
+    [input.german, input.english, input.setNumber]
+  );
+}
+
+export async function updateAdjective(
+  id: number,
+  input: { german: string; english: string }
+): Promise<void> {
+  await seeded;
+  await query("UPDATE adjectives SET german = $1, english = $2 WHERE id = $3", [
+    input.german,
+    input.english,
+    id,
+  ]);
+}
+
+export async function deleteAdjective(id: number): Promise<void> {
+  await seeded;
+  await query("DELETE FROM adjectives WHERE id = $1", [id]);
+}
+
+export async function deleteAdjectiveSet(setNumber: number): Promise<void> {
+  await seeded;
+  await query("DELETE FROM adjectives WHERE set_number = $1", [setNumber]);
 }

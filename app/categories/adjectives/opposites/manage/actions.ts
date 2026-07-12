@@ -53,9 +53,9 @@ export async function createSetAction(
     };
   }
 
-  const setNumber = getNextOppositeSetNumber();
+  const setNumber = await getNextOppositeSetNumber();
   for (const pair of pairs) {
-    createOpposite({ ...pair, setNumber });
+    await createOpposite({ ...pair, setNumber });
   }
 
   revalidateOppositePaths();
@@ -78,7 +78,7 @@ export async function addPairToSetAction(
     return { status: "error", message: "Fill in both the word and its opposite." };
   }
 
-  createOpposite({ word, opposite, setNumber });
+  await createOpposite({ word, opposite, setNumber });
   revalidateOppositePaths();
 
   return { status: "success", message: `Added "${word}" to Set ${setNumber}.` };
@@ -93,17 +93,17 @@ export async function updateOppositeAction(
 
   if (!word || !opposite) return;
 
-  updateOpposite(id, { word, opposite });
+  await updateOpposite(id, { word, opposite });
   revalidateOppositePaths();
 }
 
 export async function deleteOppositeAction(id: number): Promise<void> {
-  deleteOpposite(id);
+  await deleteOpposite(id);
   revalidateOppositePaths();
 }
 
 export async function deleteOppositeSetAction(setNumber: number): Promise<void> {
-  deleteOppositeSet(setNumber);
+  await deleteOppositeSet(setNumber);
   revalidateOppositePaths();
   redirect("/categories/adjectives/opposites/manage");
 }
