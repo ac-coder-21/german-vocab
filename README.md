@@ -14,6 +14,27 @@ created automatically on first request.
   environments; run `vercel env pull .env.local` to get the same value
   locally.
 
+## Authentication
+
+The whole app sits behind a login (`proxy.ts`). Accounts are created by you,
+not via public signup:
+
+```bash
+npm run create-user -- someone@example.com "a strong password"
+```
+
+This requires two environment variables, both in `.env.local` for local dev
+and in your Vercel project's env vars for deployment:
+
+- `POSTGRES_URL` — see [Database](#database) above; the script creates the
+  `users` table itself if it doesn't exist yet.
+- `SESSION_SECRET` — a 32+ character random string used to sign session
+  cookies. Generate one with:
+
+  ```bash
+  openssl rand -base64 32
+  ```
+
 ## Getting Started
 
 First, run the development server:

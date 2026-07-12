@@ -6,12 +6,15 @@
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "create-user": "node --env-file-if-exists=.env.local scripts/create-user.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "iron-session": "^8.0.4",
     "lucide-react": "^1.24.0",
     "motion": "^12.42.2",
     "next": "16.2.10",

@@ -4,6 +4,8 @@ import "./globals.css";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { InlineScript } from "@/components/inline-script";
+import { LogoutButton } from "@/components/auth/logout-button";
+import { getSession } from "@/lib/auth/session";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,11 +24,13 @@ export const metadata: Metadata = {
 
 const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}if(t==="dark")document.documentElement.classList.add("dark")}catch(e){}})()`;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getSession();
+
   return (
     <html
       lang="en"
@@ -37,7 +41,8 @@ export default function RootLayout({
         <InlineScript html={THEME_INIT_SCRIPT} />
       </head>
       <body className="min-h-full flex flex-col">
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+          {session.userId && <LogoutButton email={session.email} />}
           <ThemeToggle />
         </div>
         {children}
