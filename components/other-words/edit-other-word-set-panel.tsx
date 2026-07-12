@@ -1,11 +1,17 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useActionState } from "react";
 import { Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { OtherWord, OtherWordSet } from "@/lib/db/other-words";
 import {
   addWordToSetAction,
@@ -29,6 +35,8 @@ export function EditOtherWordSetPanel({
   selectedSet: number | undefined;
   words: OtherWord[];
 }) {
+  const router = useRouter();
+
   if (sets.length === 0) {
     return (
       <p className="text-center text-muted-foreground">
@@ -39,23 +47,24 @@ export function EditOtherWordSetPanel({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap justify-center gap-2">
-        {sets.map((set) => (
-          <Link
-            key={set.setNumber}
-            href={`/categories/other-words/manage?set=${set.setNumber}`}
-            scroll={false}
-            className={cn(
-              "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
-              selectedSet === set.setNumber
-                ? "border-transparent bg-primary text-primary-foreground"
-                : "border-border bg-background text-muted-foreground hover:text-foreground"
-            )}
-          >
-            Set {set.setNumber}
-            <span className="ml-1.5 opacity-70">({set.count})</span>
-          </Link>
-        ))}
+      <div className="flex justify-center">
+        <Select
+          value={selectedSet !== undefined ? String(selectedSet) : undefined}
+          onValueChange={(value) =>
+            router.push(`/categories/other-words/manage?set=${value}`, { scroll: false })
+          }
+        >
+          <SelectTrigger className="w-56">
+            <SelectValue placeholder="Select a set" />
+          </SelectTrigger>
+          <SelectContent>
+            {sets.map((set) => (
+              <SelectItem key={set.setNumber} value={String(set.setNumber)}>
+                Set {set.setNumber} ({set.count})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {selectedSet !== undefined && (

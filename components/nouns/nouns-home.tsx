@@ -10,6 +10,13 @@ import { AuroraBackground } from "@/components/aurora-background";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { NounSet } from "@/lib/db/nouns";
 
@@ -82,24 +89,21 @@ export function NounsHome({ sets }: { sets: NounSet[] }) {
         </motion.div>
 
         {sets.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {sets.map((set) => (
-              <button
-                key={set.setNumber}
-                type="button"
-                onClick={() => setSelectedSet(set.setNumber)}
-                className={cn(
-                  "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
-                  selectedSet === set.setNumber
-                    ? "border-transparent bg-primary text-primary-foreground"
-                    : "border-border bg-card/60 text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Set {set.setNumber}
-                <span className="ml-1.5 opacity-70">({set.count})</span>
-              </button>
-            ))}
-          </div>
+          <Select
+            value={String(selectedSet)}
+            onValueChange={(value) => setSelectedSet(Number(value))}
+          >
+            <SelectTrigger className="w-56">
+              <SelectValue placeholder="Select a set" />
+            </SelectTrigger>
+            <SelectContent>
+              {sets.map((set) => (
+                <SelectItem key={set.setNumber} value={String(set.setNumber)}>
+                  Set {set.setNumber} ({set.count})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
 
         <Link
