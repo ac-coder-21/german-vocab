@@ -113,6 +113,14 @@ export async function getVerbsBySet(setNumber: number): Promise<Verb[]> {
   ]);
 }
 
+export async function getVerbsBySets(setNumbers: number[]): Promise<Verb[]> {
+  await seeded;
+  return query<Verb>(
+    "SELECT * FROM verbs WHERE set_number = ANY($1) ORDER BY set_number, id",
+    [setNumbers]
+  );
+}
+
 export async function getNextVerbSetNumber(): Promise<number> {
   await seeded;
   const [{ maxSet }] = await query<{ maxSet: number | null }>(

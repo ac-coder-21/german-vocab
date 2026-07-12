@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
-import { getNounsBySet } from "@/lib/db/nouns";
+import { getNounsBySets } from "@/lib/db/nouns";
+import { parseSetNumbers } from "@/lib/parse-set-numbers";
 import { TestWordsDeck } from "@/components/nouns/test-words-deck";
 
 export default async function TestWordsPage({
@@ -9,11 +10,11 @@ export default async function TestWordsPage({
   params: Promise<{ set: string }>;
 }) {
   const { set } = await params;
-  const setNumber = Number(set);
+  const setNumbers = parseSetNumbers(set);
 
-  if (!Number.isInteger(setNumber)) notFound();
+  if (!setNumbers) notFound();
 
-  const nouns = await getNounsBySet(setNumber);
+  const nouns = await getNounsBySets(setNumbers);
 
-  return <TestWordsDeck nouns={nouns} setNumber={setNumber} />;
+  return <TestWordsDeck nouns={nouns} setNumbers={setNumbers} />;
 }

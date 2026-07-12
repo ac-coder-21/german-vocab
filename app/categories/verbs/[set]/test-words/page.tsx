@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
-import { getVerbsBySet } from "@/lib/db/verbs";
+import { getVerbsBySets } from "@/lib/db/verbs";
+import { parseSetNumbers } from "@/lib/parse-set-numbers";
 import { TestWordsDeck } from "@/components/verbs/test-words-deck";
 
 export default async function TestWordsPage({
@@ -9,11 +10,11 @@ export default async function TestWordsPage({
   params: Promise<{ set: string }>;
 }) {
   const { set } = await params;
-  const setNumber = Number(set);
+  const setNumbers = parseSetNumbers(set);
 
-  if (!Number.isInteger(setNumber)) notFound();
+  if (!setNumbers) notFound();
 
-  const verbs = await getVerbsBySet(setNumber);
+  const verbs = await getVerbsBySets(setNumbers);
 
-  return <TestWordsDeck verbs={verbs} setNumber={setNumber} />;
+  return <TestWordsDeck verbs={verbs} setNumbers={setNumbers} />;
 }

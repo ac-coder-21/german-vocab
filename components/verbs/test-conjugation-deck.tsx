@@ -55,11 +55,12 @@ function buildQuestions(verbs: Verb[]): Question[] {
 
 export function TestConjugationDeck({
   verbs,
-  setNumber,
+  setNumbers,
 }: {
   verbs: Verb[];
-  setNumber: number;
+  setNumbers: number[];
 }) {
+  const setLabel = setNumbers.join(", ");
   const [order, setOrder] = useState(() => buildQuestions(verbs));
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState("");
@@ -112,7 +113,7 @@ export function TestConjugationDeck({
         <AuroraBackground />
         <div className="relative z-10 flex flex-col items-center gap-4">
           <h1 className="text-2xl font-bold tracking-tight">
-            Set {setNumber} has no conjugations yet
+            Set {setLabel} has no conjugations yet
           </h1>
           <p className="max-w-md text-muted-foreground">
             Add conjugations for this set&apos;s verbs from the manage page first.
@@ -157,7 +158,7 @@ export function TestConjugationDeck({
           </Button>
 
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Set {setNumber} conjugation results
+            Set {setLabel} conjugation results
           </h1>
           <p className="text-lg text-muted-foreground">
             You scored{" "}
@@ -230,7 +231,7 @@ export function TestConjugationDeck({
             Back
           </Button>
           <span className="text-sm font-medium text-muted-foreground">
-            Set {setNumber} · {index + 1} / {total}
+            Set {setLabel} · {index + 1} / {total}
           </span>
         </div>
 

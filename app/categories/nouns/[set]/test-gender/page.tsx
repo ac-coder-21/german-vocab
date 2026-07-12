@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
-import { getNounsBySet } from "@/lib/db/nouns";
+import { getNounsBySets } from "@/lib/db/nouns";
+import { parseSetNumbers } from "@/lib/parse-set-numbers";
 import { TestGenderDeck } from "@/components/nouns/test-gender-deck";
 
 export default async function TestGenderPage({
@@ -9,11 +10,11 @@ export default async function TestGenderPage({
   params: Promise<{ set: string }>;
 }) {
   const { set } = await params;
-  const setNumber = Number(set);
+  const setNumbers = parseSetNumbers(set);
 
-  if (!Number.isInteger(setNumber)) notFound();
+  if (!setNumbers) notFound();
 
-  const nouns = await getNounsBySet(setNumber);
+  const nouns = await getNounsBySets(setNumbers);
 
-  return <TestGenderDeck nouns={nouns} setNumber={setNumber} />;
+  return <TestGenderDeck nouns={nouns} setNumbers={setNumbers} />;
 }

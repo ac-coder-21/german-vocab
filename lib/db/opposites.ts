@@ -59,6 +59,14 @@ export async function getOppositesBySet(setNumber: number): Promise<Opposite[]> 
   ]);
 }
 
+export async function getOppositesBySets(setNumbers: number[]): Promise<Opposite[]> {
+  await seeded;
+  return query<Opposite>(
+    "SELECT * FROM opposites WHERE set_number = ANY($1) ORDER BY set_number, id",
+    [setNumbers]
+  );
+}
+
 export async function getNextOppositeSetNumber(): Promise<number> {
   await seeded;
   const [{ maxSet }] = await query<{ maxSet: number | null }>(

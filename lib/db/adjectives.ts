@@ -65,6 +65,14 @@ export async function getAdjectivesBySet(setNumber: number): Promise<Adjective[]
   );
 }
 
+export async function getAdjectivesBySets(setNumbers: number[]): Promise<Adjective[]> {
+  await seeded;
+  return query<Adjective>(
+    "SELECT * FROM adjectives WHERE set_number = ANY($1) ORDER BY set_number, id",
+    [setNumbers]
+  );
+}
+
 export async function getNextAdjectiveSetNumber(): Promise<number> {
   await seeded;
   const [{ maxSet }] = await query<{ maxSet: number | null }>(

@@ -8,18 +8,24 @@ import { ArrowLeft, ArrowRight, Pencil, Shuffle } from "lucide-react";
 import { AuroraBackground } from "@/components/aurora-background";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { OppositeSet } from "@/lib/db/opposites";
 
 export function OppositesHome({ sets }: { sets: OppositeSet[] }) {
-  const [selectedSet, setSelectedSet] = useState(sets[0]?.setNumber ?? 0);
+  const [selectedSets, setSelectedSets] = useState<number[]>(
+    sets[0] ? [sets[0].setNumber] : []
+  );
   const hasSets = sets.length > 0;
+  const hasSelection = selectedSets.length > 0;
+
+  const toggleSet = (setNumber: number) => {
+    setSelectedSets((prev) => {
+      if (prev.includes(setNumber)) {
+        if (prev.length === 1) return prev;
+        return prev.filter((n) => n !== setNumber);
+      }
+      return [...prev, setNumber].sort((a, b) => a - b);
+    });
+  };
 
   return (
     <div className="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-16 sm:py-24">
@@ -46,26 +52,27 @@ export function OppositesHome({ sets }: { sets: OppositeSet[] }) {
           <p className="text-sm font-medium text-muted-foreground">Gegenteile</p>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Opposites</h1>
           <p className="max-w-lg text-balance text-lg text-muted-foreground">
-            Pick a set, then test yourself on the opposite of each word.
+            Pick one or more sets to test yourself on the opposite of each word.
           </p>
         </motion.div>
 
         {hasSets && (
-          <Select
-            value={String(selectedSet)}
-            onValueChange={(value) => setSelectedSet(Number(value))}
-          >
-            <SelectTrigger className="w-56">
-              <SelectValue placeholder="Select a set" />
-            </SelectTrigger>
-            <SelectContent>
-              {sets.map((set) => (
-                <SelectItem key={set.setNumber} value={String(set.setNumber)}>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {sets.map((set) => {
+              const isSelected = selectedSets.includes(set.setNumber);
+              return (
+                <Button
+                  key={set.setNumber}
+                  type="button"
+                  variant={isSelected ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => toggleSet(set.setNumber)}
+                >
                   Set {set.setNumber} ({set.count})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                </Button>
+              );
+            })}
+          </div>
         )}
 
         <Link
@@ -80,12 +87,12 @@ export function OppositesHome({ sets }: { sets: OppositeSet[] }) {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-          whileHover={hasSets ? { y: -4 } : undefined}
+          whileHover={hasSelection ? { y: -4 } : undefined}
           className="w-full max-w-sm"
         >
-          {hasSets ? (
+          {hasSelection ? (
             <Link
-              href={`/categories/adjectives/opposites/${selectedSet}/test`}
+              href={`/categories/adjectives/opposites/${selectedSets.join(",")}/test`}
               className="block"
             >
               <Card className="group gap-3 overflow-hidden bg-card/70 p-6 text-center shadow-sm backdrop-blur transition-shadow hover:shadow-md hover:ring-foreground/20">

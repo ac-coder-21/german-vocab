@@ -37,11 +37,12 @@ function shuffle<T>(items: T[]): T[] {
 
 export function TestGenderDeck({
   nouns,
-  setNumber,
+  setNumbers,
 }: {
   nouns: Noun[];
-  setNumber: number;
+  setNumbers: number[];
 }) {
+  const setLabel = setNumbers.join(", ");
   const [order, setOrder] = useState(() => shuffle(nouns));
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState("");
@@ -94,7 +95,7 @@ export function TestGenderDeck({
         <AuroraBackground />
         <div className="relative z-10 flex flex-col items-center gap-4">
           <h1 className="text-2xl font-bold tracking-tight">
-            Set {setNumber} has no words yet
+            Set {setLabel} has no words yet
           </h1>
           <Button
             render={<Link href="/categories/nouns" />}
@@ -127,7 +128,7 @@ export function TestGenderDeck({
           </Button>
 
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Set {setNumber} results
+            Set {setLabel} results
           </h1>
           <p className="text-lg text-muted-foreground">
             You scored{" "}
@@ -198,7 +199,7 @@ export function TestGenderDeck({
             Back
           </Button>
           <span className="text-sm font-medium text-muted-foreground">
-            Set {setNumber} · {index + 1} / {total}
+            Set {setLabel} · {index + 1} / {total}
           </span>
         </div>
 

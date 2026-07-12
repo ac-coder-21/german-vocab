@@ -67,6 +67,14 @@ export async function getNounsBySet(setNumber: number): Promise<Noun[]> {
   ]);
 }
 
+export async function getNounsBySets(setNumbers: number[]): Promise<Noun[]> {
+  await seeded;
+  return query<Noun>(
+    "SELECT * FROM nouns WHERE set_number = ANY($1) ORDER BY set_number, id",
+    [setNumbers]
+  );
+}
+
 export async function getNextSetNumber(): Promise<number> {
   await seeded;
   const [{ maxSet }] = await query<{ maxSet: number | null }>(

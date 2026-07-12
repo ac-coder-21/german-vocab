@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
-import { getAdjectivesBySet } from "@/lib/db/adjectives";
+import { getAdjectivesBySets } from "@/lib/db/adjectives";
+import { parseSetNumbers } from "@/lib/parse-set-numbers";
 import { TestWordsDeck } from "@/components/adjectives/test-words-deck";
 
 export default async function TestWordsPage({
@@ -9,11 +10,11 @@ export default async function TestWordsPage({
   params: Promise<{ set: string }>;
 }) {
   const { set } = await params;
-  const setNumber = Number(set);
+  const setNumbers = parseSetNumbers(set);
 
-  if (!Number.isInteger(setNumber)) notFound();
+  if (!setNumbers) notFound();
 
-  const adjectives = await getAdjectivesBySet(setNumber);
+  const adjectives = await getAdjectivesBySets(setNumbers);
 
-  return <TestWordsDeck adjectives={adjectives} setNumber={setNumber} />;
+  return <TestWordsDeck adjectives={adjectives} setNumbers={setNumbers} />;
 }

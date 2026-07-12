@@ -65,6 +65,14 @@ export async function getOtherWordsBySet(setNumber: number): Promise<OtherWord[]
   );
 }
 
+export async function getOtherWordsBySets(setNumbers: number[]): Promise<OtherWord[]> {
+  await seeded;
+  return query<OtherWord>(
+    "SELECT * FROM other_words WHERE set_number = ANY($1) ORDER BY set_number, id",
+    [setNumbers]
+  );
+}
+
 export async function getNextOtherWordSetNumber(): Promise<number> {
   await seeded;
   const [{ maxSet }] = await query<{ maxSet: number | null }>(

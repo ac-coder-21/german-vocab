@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
-import { getOppositesBySet } from "@/lib/db/opposites";
+import { getOppositesBySets } from "@/lib/db/opposites";
+import { parseSetNumbers } from "@/lib/parse-set-numbers";
 import { OppositesTestDeck } from "@/components/adjectives/opposites/opposites-test-deck";
 
 export default async function OppositesTestPage({
@@ -9,11 +10,11 @@ export default async function OppositesTestPage({
   params: Promise<{ set: string }>;
 }) {
   const { set } = await params;
-  const setNumber = Number(set);
+  const setNumbers = parseSetNumbers(set);
 
-  if (!Number.isInteger(setNumber)) notFound();
+  if (!setNumbers) notFound();
 
-  const pairs = await getOppositesBySet(setNumber);
+  const pairs = await getOppositesBySets(setNumbers);
 
-  return <OppositesTestDeck pairs={pairs} setNumber={setNumber} />;
+  return <OppositesTestDeck pairs={pairs} setNumbers={setNumbers} />;
 }

@@ -10,13 +10,6 @@ import { AuroraBackground } from "@/components/aurora-background";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { AdjectiveSet } from "@/lib/db/adjectives";
 
@@ -26,7 +19,8 @@ type Mode = {
   description: string;
   icon: LucideIcon;
   accent: string;
-  href?: (setNumber: number) => string;
+  multiSet?: boolean;
+  href?: (setNumbers: number[]) => string;
   // True for modes that manage their own sets independently of the
   // vocabulary set picker on this page (e.g. Opposites has its own sets).
   standalone?: boolean;
@@ -39,7 +33,7 @@ const modes: Mode[] = [
     description: "Flip through flashcards — swipe for the next word.",
     icon: BookOpen,
     accent: "from-sky-500/15 text-sky-500",
-    href: (setNumber) => `/categories/adjectives/${setNumber}/learn`,
+    href: (setNumbers) => `/categories/adjectives/${setNumbers[0]}/learn`,
   },
   {
     key: "test-words",
@@ -47,7 +41,8 @@ const modes: Mode[] = [
     description: "Recall the German adjective for each English prompt.",
     icon: ListChecks,
     accent: "from-amber-500/15 text-amber-500",
-    href: (setNumber) => `/categories/adjectives/${setNumber}/test-words`,
+    multiSet: true,
+    href: (setNumbers) => `/categories/adjectives/${setNumbers.join(",")}/test-words`,
   },
   {
     key: "test-opposites",
@@ -61,7 +56,19 @@ const modes: Mode[] = [
 ];
 
 export function AdjectivesHome({ sets }: { sets: AdjectiveSet[] }) {
-  const [selectedSet, setSelectedSet] = useState(sets[0]?.setNumber ?? 0);
+  const [selectedSets, setSelectedSets] = useState<number[]>(
+    sets[0] ? [sets[0].setNumber] : []
+  );
+
+  const toggleSet = (setNumber: number) => {
+    setSelectedSets((prev) => {
+      if (prev.includes(setNumber)) {
+        if (prev.length === 1) return prev;
+        return prev.filter((n) => n !== setNumber);
+      }
+      return [...prev, setNumber].sort((a, b) => a - b);
+    });
+  };
 
   return (
     <div className="relative flex flex-1 flex-col items-center overflow-hidden px-6 py-16 sm:py-24">
@@ -88,26 +95,27 @@ export function AdjectivesHome({ sets }: { sets: AdjectiveSet[] }) {
           <p className="text-sm font-medium text-muted-foreground">Adjektive</p>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Adjectives</h1>
           <p className="max-w-lg text-balance text-lg text-muted-foreground">
-            Pick a set, then choose how you want to practice.
+            Pick one or more sets — Learn uses the first, tests combine them all.
           </p>
         </motion.div>
 
         {sets.length > 0 && (
-          <Select
-            value={String(selectedSet)}
-            onValueChange={(value) => setSelectedSet(Number(value))}
-          >
-            <SelectTrigger className="w-56">
-              <SelectValue placeholder="Select a set" />
-            </SelectTrigger>
-            <SelectContent>
-              {sets.map((set) => (
-                <SelectItem key={set.setNumber} value={String(set.setNumber)}>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {sets.map((set) => {
+              const isSelected = selectedSets.includes(set.setNumber);
+              return (
+                <Button
+                  key={set.setNumber}
+                  type="button"
+                  variant={isSelected ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => toggleSet(set.setNumber)}
+                >
                   Set {set.setNumber} ({set.count})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                </Button>
+              );
+            })}
+          </div>
         )}
 
         <Link
@@ -120,7 +128,9 @@ export function AdjectivesHome({ sets }: { sets: AdjectiveSet[] }) {
 
         <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-3">
           {modes.map((mode, index) => {
-            const enabled = Boolean(mode.href) && (mode.standalone || sets.length > 0);
+            const enabled =
+              Boolean(mode.href) && (mode.standalone || selectedSets.length > 0);
+            const targetSets = mode.multiSet ? selectedSets : [selectedSets[0]];
 
             const cardBody = (
               <Card
@@ -162,7 +172,7 @@ export function AdjectivesHome({ sets }: { sets: AdjectiveSet[] }) {
                 whileHover={enabled ? { y: -4 } : undefined}
               >
                 {enabled && mode.href ? (
-                  <Link href={mode.href(selectedSet)} className="block h-full">
+                  <Link href={mode.href(targetSets)} className="block h-full">
                     {cardBody}
                   </Link>
                 ) : (
