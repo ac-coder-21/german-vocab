@@ -98,13 +98,13 @@ function NounRow({ noun }: { noun: Noun }) {
       action={updateWithId}
       className="flex flex-wrap items-center gap-2 rounded-xl border bg-background/60 p-3"
     >
-      <input name="german" defaultValue={noun.german} className={fieldClass} />
-      <input name="english" defaultValue={noun.english} className={fieldClass} />
       <select name="artikel" defaultValue={noun.artikel} className={fieldClass}>
         <option value="der">der</option>
         <option value="die">die</option>
         <option value="das">das</option>
       </select>
+      <input name="german" defaultValue={noun.german} className={fieldClass} />
+      <input name="english" defaultValue={noun.english} className={fieldClass} />
       <Button type="submit" variant="outline" size="sm">
         Save
       </Button>
@@ -130,13 +130,13 @@ function AddWordForm({ setNumber }: { setNumber: number }) {
       action={formAction}
       className="flex flex-wrap items-center gap-2 rounded-xl border border-dashed bg-background/40 p-3"
     >
-      <input name="german" placeholder="German" className={fieldClass} />
-      <input name="english" placeholder="English" className={fieldClass} />
       <select name="artikel" defaultValue="der" className={fieldClass}>
         <option value="der">der</option>
         <option value="die">die</option>
         <option value="das">das</option>
       </select>
+      <input name="german" placeholder="German" className={fieldClass} />
+      <input name="english" placeholder="English" className={fieldClass} />
       <Button type="submit" disabled={pending}>
         {pending ? "Adding…" : "Add word"}
       </Button>

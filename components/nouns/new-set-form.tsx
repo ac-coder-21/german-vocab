@@ -52,13 +52,13 @@ export function NewSetForm({ nextSetNumber }: { nextSetNumber: number }) {
             key={id}
             className="flex flex-wrap items-center gap-2 rounded-xl border bg-card/60 p-3"
           >
-            <input name="german" placeholder="German (e.g. Tisch)" className={fieldClass} />
-            <input name="english" placeholder="English (e.g. table)" className={fieldClass} />
             <select name="artikel" defaultValue="der" className={fieldClass}>
               <option value="der">der</option>
               <option value="die">die</option>
               <option value="das">das</option>
             </select>
+            <input name="german" placeholder="German (e.g. Tisch)" className={fieldClass} />
+            <input name="english" placeholder="English (e.g. table)" className={fieldClass} />
             <Button
               type="button"
               variant="ghost"
