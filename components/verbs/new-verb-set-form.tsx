@@ -75,10 +75,16 @@ export function NewVerbSetForm({ nextSetNumber }: { nextSetNumber: number }) {
         ))}
       </div>
 
-      <Button type="button" variant="outline" onClick={addRow} className="self-start">
-        <Plus className="size-4" />
-        Add verb
-      </Button>
+      <div className="flex items-center justify-between">
+        <Button type="button" variant="outline" onClick={addRow}>
+          <Plus className="size-4" />
+          Add verb
+        </Button>
+
+        <Button type="submit" disabled={pending}>
+          {pending ? "Creating…" : `Create Set ${nextSetNumber}`}
+        </Button>
+      </div>
 
       {state.message && (
         <p
@@ -91,10 +97,6 @@ export function NewVerbSetForm({ nextSetNumber }: { nextSetNumber: number }) {
           {state.message}
         </p>
       )}
-
-      <Button type="submit" disabled={pending} className="self-start">
-        {pending ? "Creating…" : `Create Set ${nextSetNumber}`}
-      </Button>
     </form>
   );
 }
